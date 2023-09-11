@@ -1,0 +1,41 @@
+.text
+.globl main
+
+main:
+    li $t0, 0           # Inicializa el contador a 0 (para contar los números ingresados)
+    li $s0, 0           # Inicializa el número máximo a 0
+    li $s1, 3           # Solicitar tres números al usuario
+
+input_loop:
+    bge $t0, $s1, find_max  # Salta a la parte de encontrar el número máximo si se han ingresado 3 números
+    li $v0, 4               # Imprime el mensaje de entrada
+    la $a0, prompt
+    syscall
+
+    li $v0, 5               # Lee un número entero del usuario
+    syscall
+
+    move $t2, $v0           # Copia el número ingresado a $t2
+
+    ble $t2, $s0, not_max   # Compara $t2 con el número máximo actual
+    move $s0, $t2           # Si es mayor, actualiza el número máximo
+
+not_max:
+    addi $t0, $t0, 1        # Incrementa el contador de números ingresados
+    b input_loop
+
+find_max:
+    li $v0, 4               # Imprime un mensaje
+    la $a0, max_message
+    syscall
+
+    move $a0, $s0           # Carga el número máximo en $a0
+    li $v0, 1               # Imprime el número máximo
+    syscall
+
+    li $v0, 10              # Termina el programa
+    syscall
+
+.data
+prompt: .asciiz "Ingrese un número: "
+max_message: .asciiz "El número mayor es: "
