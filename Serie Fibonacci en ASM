@@ -1,0 +1,75 @@
+.text
+.globl main
+
+main:
+    li $t0, 0           # Inicializa el contador a 0 (para contar los números generados)
+    li $s1, 7           # Generar los primeros 8 números de Fibonacci (F(0) hasta F(7))
+
+    # Manejo de casos especiales para los primeros dos números de Fibonacci
+    bge $t0, 2, fibonacci_loop
+    li $v0, 4               # Imprime el mensaje de entrada
+    la $a0, prompt
+    syscall
+
+    li $v0, 1               # Imprime el valor 0 o 1 dependiendo de la iteración
+    move $a0, $t0           # Carga el contador en $a0
+    syscall
+
+    addi $t0, $t0, 1        # Incrementa el contador
+
+fibonacci_loop:
+    bge $t0, $s1, exit      # Salta a la salida si hemos generado los números requeridos
+    move $s0, $t0           # Copia el valor del contador en $s0 (n)
+    jal fibonacci           # Llama a la función Fibonacci
+    move $a0, $v0           # Copia el resultado (número de Fibonacci) en $a0
+
+    li $v0, 1               # Imprime el número de Fibonacci
+    syscall
+
+    addi $t0, $t0, 1        # Incrementa el contador
+
+    # Agregar espacio entre los números de Fibonacci
+    li $v0, 4               # Imprime un espacio
+    la $a0, space
+    syscall
+
+    b fibonacci_loop
+
+exit:
+    # Agregar un salto de línea al final
+    li $v0, 4               # Imprime un salto de línea
+    la $a0, newline
+    syscall
+
+    li $v0, 10              # Termina el programa
+    syscall
+
+# Función para calcular el número de Fibonacci de n
+# Entrada: $s0 = n
+# Salida: $v0 = resultado
+fibonacci:
+    beqz $s0, fib_base_case # Si n es 0, retorna 0
+    li $t1, 0               # Inicializa el primer número de la serie (F(0)) en $t1
+    li $t2, 1               # Inicializa el segundo número de la serie (F(1)) en $t2
+
+fib_loop:
+    bnez $s0, fib_continue  # Si n != 0, continúa el bucle
+    move $v0, $t1           # Retorna el resultado en $v0
+    jr $ra
+
+fib_continue:
+    add $t3, $t1, $t2       # Calcula F(n) = F(n-1) + F(n-2)
+    move $t1, $t2           # Actualiza F(n-2) a F(n-1)
+    move $t2, $t3           # Actualiza F(n-1) a F(n)
+
+    subi $s0, $s0, 1        # Decrementa n
+    j fib_loop
+
+fib_base_case:
+    li $v0, 0               # Retorna 0 si n es 0
+    jr $ra
+
+.data
+prompt: .asciiz "Una serie fibonacci de 7 numeros seria la siguiente: "
+space: .asciiz " "
+newline: .asciiz "\n"
